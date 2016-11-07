@@ -48,8 +48,10 @@ var XMLHttpRequest = (function() {
         }
 
         function setRequestHeader(name, value) {
-            this._reqHead[name] = this._reqHead[name] || [];
-            this._reqHead[name].push(value);
+            var h = this._reqHead[name] || '';
+
+            if (h) h += ', ';
+            this._reqHead[name] = h + value;
             x.setRequestHeader(name, value);
         }
 
@@ -128,7 +130,7 @@ var XMLHttpRequest = (function() {
     function addCriteria(key) {
         return function (pattern) {
             var i = this._id || (idBase++).toString(36);
-            var d = overrides[i] || function () {};
+            var d = overrides[i] || function () { return true};
 
             overrides[i] = function (xhr) {
                 return isMatch(xhr[key], pattern) && d(xhr);
