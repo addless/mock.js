@@ -111,8 +111,7 @@ var XMLHttpRequest = (function() {
             overrides[i] = function (xhr) {
                 return isMatch(xhr[key], pattern) && d(xhr);
             };
-
-            // FIXME: these keys should be alphabetized for easy lookup later
+            
             return {
                 setResponseStatus: setResponseStatus,
                 setResponseHeader: setResponseHeader,
