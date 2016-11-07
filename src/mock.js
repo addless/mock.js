@@ -1,4 +1,7 @@
 var XMLHttpRequest = (function() {
+    'use strict';
+
+    var proto = XMLHttpRequest.prototype;
     var _xmlHttpRequest = XMLHttpRequest;
     var overrides = {__proto__: null};
     var idBase = Date.now();
@@ -14,19 +17,33 @@ var XMLHttpRequest = (function() {
     function NewXMLHttpRequest() {
         var x = new _xmlHttpRequest();
 
-        return {
-            getAllResponseHeaders: getAllResponseHeaders,
-            getResponseHeader:     getResponseHeader,
-            setRequestHeader:      setRequestHeader,
-            _resHead:              {__proto__: null},
-            _reqHead:              {__proto__: null},
-            open:                  open,
-            send:                  send,
-            __proto__:             x
-        };
+        return Object.create(x, {
+            getAllResponseHeaders: {value: getAllResponseHeaders},
+            getResponseHeader:     {value: getResponseHeader},
+            setRequestHeader:      {value: setRequestHeader},
+            _resHead:              {value: {__proto__: null}},
+            _reqHead:              {value: {__proto__: null}},
+            onloadstart:           setListener('onloadstart'),
+            onprogress:            setListener('onprogress'),
+            ontimeout:             setListener('ontimeout'),
+            onloadend:             setListener('onloadend'),
+            onabort:               setListener('onabort'),
+            onerror:               setListener('onerror'),
+            onload:                setListener('onload'),
+            status:                setListener('status'),
+            open:                  {value: open},
+            send:                  {value: send}
+        });
+
+        function setListener(key) {
+            var k = '_' + key;
+            return {get: get, set: set};
+            function get() { return this[k] != null ? this[k] : x[key]; }
+            function set(func) { return this[k] = x[key] = func.bind(this); }
+        }
 
         function open(method, url, async) {
-            x.open(method, url, async);
+            x.open.apply(x, arguments);
             this._method = method;
         }
 
@@ -58,35 +75,39 @@ var XMLHttpRequest = (function() {
             var o = false;
             var i = -1;
 
-            x.send(body);
             this._body = body;
             while (k[++i]) if (o = overrides[k[i]](this)) break;
+            x.send(body);
         }
     }
 
     function setResponseStatus(code) {
         var o = overrides[this._id];
 
-        overrides[this._id] = function (xhr) {
-            o(xhr); // execute previous override
-            xhr.responseStatus = code;
-            return true;
-        };
-
+        overrides[this._id] = override;
+        this.__proto__ = null;
         return this;
+
+        function override(xhr) {
+            if (o(xhr) !== true) return;
+            xhr._status = code;
+            return true;
+        }
     }
 
     function setResponseBody(body) {
         var o = overrides[this._id];
         var b = JSON.stringify(body);
 
-        overrides[this._id] = function (xhr) {
-            o(xhr); // execute previous override
+        overrides[this._id] = override;
+        this.__proto__ = null;
+        return this;
+
+        function override (xhr) {
+            if (o(xhr) !== true) return;
             xhr.responseText = b;
             return true;
-        };
-
-        return this;
+        }
     }
 
     function setResponseHeader(headers) {
@@ -100,19 +121,19 @@ var XMLHttpRequest = (function() {
             return true;
         };
 
+        this.__proto__ = null;
         return this;
     }
 
     function addCriteria(key) {
         return function (pattern) {
             var i = this._id || (idBase++).toString(36);
-            var d = overrides[i];
+            var d = overrides[i] || function () {};
 
             overrides[i] = function (xhr) {
                 return isMatch(xhr[key], pattern) && d(xhr);
             };
 
-            // FIXME: these keys should be alphabetized for easy lookup later
             return {
                 setResponseStatus: setResponseStatus,
                 setResponseHeader: setResponseHeader,
@@ -129,15 +150,15 @@ var XMLHttpRequest = (function() {
                 case pattern == null:
                     break;
 
-                default:
-                    if (value !== pattern) return false;
-                    break;
-
                 case pattern instanceof RegExp:
                     if (!pattern.test(value)) return false;
                     break;
 
-                case value instanceof Object:
+                case typeof value !== 'object':
+                    if (value !== pattern) return false;
+                    break;
+
+                default:
                     k = Object.keys(pattern);
                     while (k[++i]) if (!isMatch(value[k[i]], pattern[k[i]])) return false;
                 }
