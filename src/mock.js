@@ -22,12 +22,21 @@ var XMLHttpRequest = (function() {
             _reqHead:              {__proto__: null},
             open:                  open,
             send:                  send,
+            onload:                { get: onLoadGetter, set: onLoadSetter },
             __proto__:             x
         };
 
         function open(method, url, async) {
             x.open(method, url, async);
             this._method = method;
+        }
+
+        function onLoadGetter() {
+            return x.onload;
+        }
+
+        function onLoadSetter(o) {
+            return x.onload = o;
         }
 
         function setRequestHeader(name, value) {
@@ -57,10 +66,22 @@ var XMLHttpRequest = (function() {
             var k = Object.keys(overrides);
             var o = false;
             var i = -1;
+            var me = this;
 
-            x.send(body);
+            // TODO: investigate whether we need to call xhr send or simply call onload
+            // x.send(body);
+
             this._body = body;
-            while (k[++i]) if (o = overrides[k[i]](this)) break;
+
+            setTimeout(function () {
+                while (k[++i]) {
+                    // TODO: why are we not using triple equals, what type of conditional is going on here?
+                    if (o = overrides[k[i]](me)) {
+                        break;
+                    }
+                }
+                me.onload();
+            });
         }
     }
 

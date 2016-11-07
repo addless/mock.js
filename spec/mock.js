@@ -1,5 +1,13 @@
 describe('Mock', function () {
 
+    beforeEach(function() {
+        jasmine.clock().install();
+    });
+
+    afterEach(function() {
+        jasmine.clock().uninstall();
+    });
+
     it('should mock responses based on header equality', function (done) {
         var x = new XMLHttpRequest();
 
@@ -11,6 +19,8 @@ describe('Mock', function () {
         x.setRequestHeader('x', 'y');
         x.onload = onload;
         x.send();
+        expect(x.responseStatus).not.toBe(111);
+        jasmine.clock().tick();
 
         function onload() {
             expect(x.responseStatus).toBe(111);
@@ -29,6 +39,8 @@ describe('Mock', function () {
         x.setRequestHeader('x', 'y');
         x.onload = onload;
         x.send();
+        expect(x.responseStatus).not.toBe(111);
+        jasmine.clock().tick();
 
         function onload() {
             expect(x.responseStatus).toBe(111);
@@ -48,6 +60,8 @@ describe('Mock', function () {
         x.setRequestHeader('x', 'y');
         x.onload = onload;
         x.send();
+        expect(x.responseStatus).not.toBe(111);
+        jasmine.clock().tick();
 
         function onload() {
             expect(x.responseStatus).toBe(111);
@@ -67,6 +81,8 @@ describe('Mock', function () {
         x.setRequestHeader('x', 'y');
         x.onload = onload;
         x.send();
+        expect(x.responseStatus).not.toBe(111);
+        jasmine.clock().tick(5);
 
         function onload() {
             expect(x.responseStatus).toBe(111);
