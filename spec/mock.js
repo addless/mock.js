@@ -8,7 +8,7 @@ describe('Mock', function () {
         jasmine.clock().uninstall();
     });
 
-    it('should mock responses based on header equality', function (done) {
+    it('should mock responses based on header equality', function () {
         var x = new XMLHttpRequest();
 
         XMLHttpRequest
@@ -24,11 +24,10 @@ describe('Mock', function () {
 
         function onload() {
             expect(x.responseStatus).toBe(111);
-            done();
         }
     });
 
-    it('should mock responses based on header pattern', function (done) {
+    it('should mock responses based on header pattern', function () {
         var x = new XMLHttpRequest();
 
         XMLHttpRequest
@@ -44,11 +43,10 @@ describe('Mock', function () {
 
         function onload() {
             expect(x.responseStatus).toBe(111);
-            done();
         }
     });
 
-    it('should mock responses based on url equality', function (done) {
+    it('should mock responses based on url equality', function () {
         var x = new XMLHttpRequest();
         var u = 'http://foo.bar';
 
@@ -65,11 +63,10 @@ describe('Mock', function () {
 
         function onload() {
             expect(x.responseStatus).toBe(111);
-            done();
         }
     });
 
-    it('should mock responses based on url pattern', function (done) {
+    it('should mock responses based on url pattern', function () {
         var x = new XMLHttpRequest();
         var u = 'http://foo.bar';
 
@@ -82,15 +79,14 @@ describe('Mock', function () {
         x.onload = onload;
         x.send();
         expect(x.responseStatus).not.toBe(111);
-        jasmine.clock().tick(5);
+        jasmine.clock().tick();
 
         function onload() {
             expect(x.responseStatus).toBe(111);
-            done();
         }
     });
 
-    it('should mock body', function (done) {
+    it('should mock body', function () {
         var x = new XMLHttpRequest();
         var b = {foo: 1};
 
@@ -105,7 +101,6 @@ describe('Mock', function () {
 
         function onload() {
             expect(JSON.stringify(x.responseText)).toBe(b);
-            done();
         }
     });
 });
