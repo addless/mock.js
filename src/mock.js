@@ -1,172 +1,196 @@
-var XMLHttpRequest = (function() {
+(function() {
     'use strict';
 
-    var proto = XMLHttpRequest.prototype;
-    var _xmlHttpRequest = XMLHttpRequest;
-    var overrides = {__proto__: null};
-    var idBase = Date.now();
+    var instructions = {__proto__: null};
+    var unique = Date.now();
 
-    return Object.defineProperties(NewXMLHttpRequest, {
-        ifRequestURL:        {value: addCriteria('responseURL')},
-        ifRequestHeader:     {value: addCriteria('_reqHead')},
-        ifRequestMethod:     {value: addCriteria('_method')},
-        ifRequestBody:       {value: addCriteria('_body')},
-        _requisiteCondition: {value: function () {}}
+    Object.defineProperties(XMLHttpRequest.prototype, {
+        _getAllResHeaders: {value: XMLHttpRequest.prototype.getAllResponseHeaders},
+        _getResHeader:     {value: XMLHttpRequest.prototype.getResponseHeader},
+        _setReqHeader:     {value: XMLHttpRequest.prototype.setRequestHeader},
+        _open:             {value: XMLHttpRequest.prototype.open},
+        _send:             {value: XMLHttpRequest.prototype.send},
+        _mockURL:          {value: location.href},
+
+        responseText:          defineProxy(XMLHttpRequest.prototype, 'responseText'),
+        status:                defineProxy(XMLHttpRequest.prototype, 'status'),
+        getAllResponseHeaders: {value: getAllResponseHeaders},
+        getResponseHeader:     {value: getResponseHeader},
+        setRequestHeader:      {value: setRequestHeader},
+        open:                  {value: open},
+        send:                  {value: send}
     });
 
-    function NewXMLHttpRequest() {
-        var x = new _xmlHttpRequest();
+    Object.defineProperties(XMLHttpRequest, {
+        ifRequestHeader:     {value: addMockCriteria('_reqHead')},
+        ifRequestMethod:     {value: addMockCriteria('_method')},
+        ifRequestBody:       {value: addMockCriteria('_body')},
+        ifRequestURL:        {value: addMockCriteria('_url')},
+        setResponseStatus:   {value: setResponseStatus},
+        setResponseHeader:   {value: setResponseHeader},
+        setResponseBody:     {value: setResponseBody},
+        dropAllMocks:        {value: dropAllMocks}
+    });
 
-        return Object.create(x, {
-            getAllResponseHeaders: {value: getAllResponseHeaders},
-            getResponseHeader:     {value: getResponseHeader},
-            setRequestHeader:      {value: setRequestHeader},
-            _resHead:              {value: {__proto__: null}},
-            _reqHead:              {value: {__proto__: null}},
-            onloadstart:           setListener('onloadstart'),
-            onprogress:            setListener('onprogress'),
-            ontimeout:             setListener('ontimeout'),
-            onloadend:             setListener('onloadend'),
-            onabort:               setListener('onabort'),
-            onerror:               setListener('onerror'),
-            onload:                setListener('onload'),
-            status:                setListener('status'),
-            open:                  {value: open},
-            send:                  {value: send}
-        });
+    function dropAllMocks() {
+        instructions = {__proto__: null};
+    }
+    
+    function open(method, url, async) {
+        this._open.apply(this, arguments);
+        this._reqHead = {__proto__: null};
+        this._resHead = {__proto__: null};
+        this._method = method;
+        this._body = null;
+        this._url = url;
+    }
 
-        function setListener(key) {
-            var k = '_' + key;
-            return {get: get, set: set};
-            function get() { return this[k] != null ? this[k] : x[key]; }
-            function set(func) { return this[k] = x[key] = func.bind(this); }
-        }
+    function send(body) {
+        var n;
 
-        function open(method, url, async) {
-            x.open.apply(x, arguments);
-            this._method = method;
-        }
+        try { this._body = JSON.parse(body) }
+        catch (_) { }
 
-        function setRequestHeader(name, value) {
-            var h = this._reqHead[name] || '';
+        if (typeof this._body !== 'object') this._body = String(body);
+        for (n in instructions) if (instructions[n](this)) break;
+        this._send.apply(this, arguments);
+    }
 
-            if (h) h += ', ';
-            this._reqHead[name] = h + value;
-            x.setRequestHeader(name, value);
-        }
+    function setRequestHeader(key, value) {
+        setHeader(this._reqHead, key, value);
+        this._setReqHeader.apply(this, arguments);
+    }
 
-        function getResponseHeader(name) {
-            var k = Object.keys(this._resHead);
-            if (k.length < 1) return x.getResponseHeader(name);
-            if (k.length > 0) return (this._resHead[name] || []).join(', ');
-        }
+    function setHeader(head, key, value) {
+        var v = head[key] || '';
+        if (v === '') head[key] = v + value;
+        if (v !== '') head[key] = v + ', ' + value;
+    }
 
-        function getAllResponseHeaders() {
-            var k = Object.keys(this._resHead);
-            var r = [];
-            var i = -1;
+    function getResponseHeader(name) {
+        var k = Object.keys(this._resHead);
 
-            while (k[++i]) r[i] = k[i] + ':' + this._resHead[k[i]];
-            if (r.length < 1) return x.getAllResponseHeaders();
-            if (r.length > 0) return r.join('\r\n');
+        if (k.length === 0) return this._getResHeader.apply(this, arguments);
+        if (k.length !== 0) return this._resHead[name] || null;
+    }
 
-        }
+    function getAllResponseHeaders() {
+        var k = Object.keys(this._resHead);
+        var r = [];
+        var i = -1;
 
-        function send(body) {
-            var k = Object.keys(overrides);
-            var o = false;
-            var i = -1;
-
-            this._body = body;
-            while (k[++i]) if (o = overrides[k[i]](this)) break;
-            x.send(body);
-        }
+        if (k.length < 1) return this._getAllResHeaders.apply(this, arguments);
+        while (k[++i]) r[i] = k[i] + ':' + this._resHead[k[i]];
+        if (k.length > 0) return r.join('\r\n');
     }
 
     function setResponseStatus(code) {
-        var o = overrides[this._id];
+        var test = instructions[this._id];
 
-        overrides[this._id] = override;
-        this.__proto__ = null;
+        instructions[this._id] = setStatus;
         return this;
 
-        function override(xhr) {
-            if (o(xhr) !== true) return;
+        function setStatus(xhr) {
+            if (test(xhr) !== true) return;
             xhr._status = code;
             return true;
         }
     }
 
     function setResponseBody(body) {
-        var o = overrides[this._id];
-        var b = JSON.stringify(body);
+        var test = instructions[this._id];
 
-        overrides[this._id] = override;
-        this.__proto__ = null;
+        if (typeof body !== 'string') body = JSON.stringify(body);
+        instructions[this._id] = setBody;
         return this;
 
-        function override (xhr) {
-            if (o(xhr) !== true) return;
-            xhr.responseText = b;
+        function setBody(xhr) {
+            if (test(xhr) !== true) return;
+            xhr._responseText = body;
             return true;
         }
     }
 
     function setResponseHeader(headers) {
         var k = Object.keys(headers);
-        var d = overrides[this._id];
+        var test = instructions[this._id];
 
-        overrides[this._id] = function (xhr) {
-            var i = -1;
-            d(xhr); // execute previous override
-            while (k[++i]) xhr._resHead[k[i]] = headers[k[i]];
-            return true;
-        };
-
-        this.__proto__ = null;
+        instructions[this._id] = setHeaders;
         return this;
+
+        function setHeaders(xhr) {
+            var i = -1;
+            if (test(xhr) !== true) return;
+            while (k[++i]) setHeader(xhr._resHead, k[i], headers[k[i]]);
+            return true;
+        }
     }
 
-    function addCriteria(key) {
+    function defineProxy(proto, key) {
+        var d = Object.getOwnPropertyDescriptor(proto, key);
+        var k = '_' + key;
+
+        return {
+            get: getter,
+            set: setter
+        };
+
+        function getter() {
+            if (this[k] != null) return this[k];
+            if (d.get == null) return this[key];
+            if (d.get != null) return d.get.call(this);
+        }
+
+        function setter(value) {
+            if (d.set == null) this[k] = value;
+            if (d.set != null) d.set.call(this, value);
+        }
+    }
+
+    function addMockCriteria(key) {
         return function (pattern) {
-            var i = this._id || (idBase++).toString(36);
-            var d = overrides[i] || function () { return true};
+            var i = this._id || (unique++).toString(36);
+            var f = instructions[i] || sendMockRequest;
 
-            overrides[i] = function (xhr) {
-                return isMatch(xhr[key], pattern) && d(xhr);
-            };
+            instructions[i] = testRequest.bind(null, f, key, pattern);
+            return {__proto__: this, _id: i};
+        };
 
-            return {
-                setResponseStatus: setResponseStatus,
-                setResponseHeader: setResponseHeader,
-                setResponseBody:   setResponseBody,
-                __proto__:         this,
-                _id:               i
-            };
+        function sendMockRequest(xhr) {
+            xhr._open('HEAD', xhr._mockURL);
+            return true;
+        }
 
-            function isMatch(value, pattern) {
-                var k;
-                var i = -1;
+        function testRequest(next, key, pattern, xhr) {
+            return isMatch(xhr[key], pattern) && next(xhr);
+        }
 
-                switch (true) {
-                case pattern == null:
-                    break;
+        function isMatch(value, pattern) {
+            var k;
+            var i = -1;
 
-                case pattern instanceof RegExp:
-                    if (!pattern.test(value)) return false;
-                    break;
+            switch (true) {
+            case value === pattern:
+                break;
 
-                case typeof value !== 'object':
-                    if (value !== pattern) return false;
-                    break;
+            case value == null:
+            case pattern == null:
+                return false;
 
-                default:
-                    k = Object.keys(pattern);
-                    while (k[++i]) if (!isMatch(value[k[i]], pattern[k[i]])) return false;
-                }
+            default:
+                if (value !== pattern) return false;
+                break;
 
-                return true;
+            case pattern instanceof RegExp:
+                if (!pattern.test(value)) return false;
+                break;
+
+            case typeof value === 'object':
+                k = Object.keys(pattern);
+                while (k[++i]) if (!isMatch(value[k[i]], pattern[k[i]])) return false;
             }
+
+            return true;
         }
     }
 }());
