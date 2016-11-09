@@ -257,8 +257,8 @@ describe('Mock', function () {
             .setResponseBody({mock: ['body']});
 
         (function () {
-            x.onload = onload;
             x.open('GET', 'base/spec/mock.json');
+            x.onload = onload;
             x.send();
 
             function onload() {
@@ -271,6 +271,48 @@ describe('Mock', function () {
                 this.open('GET', 'base/spec/mock.json');
                 this.onload = onload;
                 this.send(1);
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mock":["body"]}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
+    });
+
+    it('should mock response based on location params', function (done) {
+        var x = new XMLHttpRequest();
+
+        XMLHttpRequest
+            .ifLocationParam({a: '1', b: '1'})
+            .ifLocationParam({c: /^1$/})
+            .setResponseStatus(1)
+            .setResponseHeader({c:1})
+            .setResponseHeader({c:1, d:1})
+            .setResponseBody({mock: ['body']});
+
+        (function () {
+            x.open('GET', 'base/spec/mock.json');
+            location.hash = 'a=1&b=1';
+            x.onload = onload;
+            x.send();
+
+            function onload() {
+                expect(this.responseText).toBe('{"mock":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.open('GET', 'base/spec/mock.json');
+                location.hash = 'a=1&b=1&c=1';
+                this.onload = onload;
+                this.send();
 
                 function onload() {
                     expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
