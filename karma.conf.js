@@ -8,6 +8,7 @@ module.exports = function(config) {
         ],
         files: [
             'src/**.js',
+            'lib/data_driven.js',
             'spec/**.js',
 
             {pattern: 'spec/**.json', included: false}
