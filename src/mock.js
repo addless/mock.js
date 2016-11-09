@@ -23,6 +23,7 @@
 
     Object.defineProperties(XMLHttpRequest, {
         ifRequestHeader:     {value: addMockCriteria('_reqHead')},
+        ifLocationParam:     {value: addMockCriteria('_params')},
         ifRequestMethod:     {value: addMockCriteria('_method')},
         ifRequestBody:       {value: addMockCriteria('_body')},
         ifRequestURL:        {value: addMockCriteria('_url')},
@@ -40,13 +41,18 @@
         this._open.apply(this, arguments);
         this._reqHead = {__proto__: null};
         this._resHead = {__proto__: null};
+        this._params = {__proto__: null};
         this._method = method;
         this._body = null;
         this._url = url;
     }
 
     function send(body) {
+        var r = /(\w+)=([^&]*)/g; // match <key>=<value> pattern in url
         var n;
+
+        while (n = r.exec(location.search)) this._params[n[1]] = n[2];
+        while (n = r.exec(location.hash)) this._params[n[1]] = n[2];
 
         try { this._body = JSON.parse(body) }
         catch (_) { }
