@@ -11,7 +11,7 @@ describe('Mock', function () {
                 mockFunction = Object.keys(mockObj)[0];
                 mockFunctionArgs = mockObj[mockFunction];
 
-                if (typeof XMLHttpRequest[mockFunction] === 'undefined') {
+                if (typeof XMLHttpRequest[mockFunction] === 'undefined' || mockFunction === 'setRequestHeader') {
                     continue;
                 }
 
@@ -23,13 +23,24 @@ describe('Mock', function () {
             }
         }
 
-        function setInstanceXHRSendOptions(x, sendOptions) {
-            var key, requestArg;
-            
-            for (key in sendOptions.setRequestHeaders) {
-                requestArg = sendOptions.setRequestHeaders[key];
-                x.setRequestHeader.apply(x, requestArg);
+        function setInstanceXHRSendOptions(sendOptions) {
+            if(typeof sendOptions.beforeSend === 'function') {
+                sendOptions.beforeSend();
             }
+        }
+        
+        function setRequestHeaders(x, ctx) {
+            var mockObj, mockFunction, mockFunctionArgs;
+            for (var i = 0; i < ctx.xhrMockMethods.length; i++) {
+                mockObj = ctx.xhrMockMethods[i];
+                mockFunction = Object.keys(mockObj)[0];
+
+                if(mockFunction === 'setRequestHeader') {
+                    mockFunctionArgs = mockObj[mockFunction];
+                    x.setRequestHeader.apply(x, mockFunctionArgs);
+                }
+            }
+
         }
 
         data_driven([
@@ -37,13 +48,11 @@ describe('Mock', function () {
                 itShould: "match request header on equality",
                 xhrMockMethods: [
                     { ifRequestHeader: [{a: '1, 1'}]  },
-                    { setResponseBody: [{mock: ['body']}]  }
+                    { setResponseBody: [{mock: ['body']}]  },
+                    { setRequestHeader: ['a', 1],  },
+                    { setRequestHeader: ['a', 1],  }
                 ],
                 sendOptions: {
-                    setRequestHeaders: [
-                        ['a', 1],
-                        ['a', 1]
-                    ]
                 },
                 expected: {
                     responseBody: '{"mock":["body"]}'
@@ -54,14 +63,12 @@ describe('Mock', function () {
                 xhrMockMethods: [
                     { ifRequestHeader: [{a: '1, 6'}]  },
                     { ifRequestHeader: [{b: /33$/}]  },
-                    { setResponseBody: [{mock: ['body2']}]  }
+                    { setResponseBody: [{mock: ['body2']}]  },
+                    { setRequestHeader: ['a', 1]  },
+                    { setRequestHeader: ['a', 6]  },
+                    { setRequestHeader: ['b', 133]  }
                 ],
                 sendOptions: {
-                    setRequestHeaders: [
-                        ['a', 1],
-                        ['a', 6],
-                        ['b', 133]
-                    ]
                 },
                 expected: {
                     responseBody: '{"mock":["body2"]}'
@@ -71,18 +78,118 @@ describe('Mock', function () {
                 itShould: "match request header set with multiple keys",
                 xhrMockMethods: [
                     { ifRequestHeader: [{a: '1, 1', b: 'multiple', c: 'd'}]  },
-                    { setResponseBody: [{mock: ['body3']}]  }
+                    { setResponseBody: [{mock: ['body3']}]  },
+                    { setRequestHeader: ['a', 1]  },
+                    { setRequestHeader: ['a', 1]  },
+                    { setRequestHeader: ['b', 'multiple']  },
+                    { setRequestHeader: ['c', 'd']  }
                 ],
                 sendOptions: {
-                    setRequestHeaders: [
-                        ['a', 1],
-                        ['a', 1],
-                        ['b', 'multiple'],
-                        ['c', 'd']
-                    ]
                 },
                 expected: {
                     responseBody: '{"mock":["body3"]}'
+                }
+            },
+            {
+                itShould: "not match on a duplicated equality request header key for the first duplicate equality",
+                xhrMockMethods: [
+                    { ifRequestHeader: [{a: '1'}]  },
+                    { ifRequestHeader: [{a: '2'}]  },
+                    { setResponseBody: [{mock: ['body3.5']}]  },
+                    { setRequestHeader: ['a', '1'] }
+                ],
+                sendOptions: {
+                },
+                expected: {
+                    responseBody: '{"mock":"json"}'
+                }
+            },
+            {
+                itShould: "not match on a duplicated equality request header key for the most recent duplicate equality",
+                xhrMockMethods: [
+                    { ifRequestHeader: [{a: '1'}]  },
+                    { ifRequestHeader: [{a: '2'}]  },
+                    { setResponseBody: [{mock: ['body3.25']}]  }
+                ],
+                sendOptions: {
+                    setRequestHeaders: [
+                        ['a', '2']
+                    ]
+                },
+                expected: {
+                    responseBody: '{"mock":"json"}'
+                }
+            },
+            {
+                itShould: "not match on a duplicated regex request header key for the first duplicate regex key",
+                xhrMockMethods: [
+                    { ifRequestHeader: [{a: /^kd/}]  },
+                    { ifRequestHeader: [{a: /^lbj/}]  },
+                    { setResponseBody: [{mock: ['body3.35']}]  },
+                    { setRequestHeader: ['a', 'kd1']  }
+                ],
+                sendOptions: {
+                },
+                expected: {
+                    responseBody: '{"mock":"json"}'
+                }
+            },
+            {
+                itShould: "not match on a duplicated regex request header key for the most recent duplicate regex key",
+                xhrMockMethods: [
+                    { ifRequestHeader: [{a: /^kd/}]  },
+                    { ifRequestHeader: [{a: /^lbj/}]  },
+                    { setResponseBody: [{mock: ['body3.45']}]  },
+                    { setRequestHeader: ['a', 'lbj1']  }
+                ],
+                sendOptions: {
+                },
+                expected: {
+                    responseBody: '{"mock":"json"}'
+                }
+            },
+            {
+                itShould: "match on a duplicated regex request header key if all patterns test true for the header",
+                xhrMockMethods: [
+                    { ifRequestHeader: [{a: /^kd/}]  },
+                    { ifRequestHeader: [{a: /lbj$/}]  },
+                    { ifRequestHeader: [{a: /\d/}]  },
+                    { setResponseBody: [{mock: ['body3.45']}] },
+                    { setRequestHeader: ['a', 'kd5lbj']  }
+                ],
+                sendOptions: {
+                },
+                expected: {
+                    responseBody: '{"mock":["body3.45"]}'
+                }
+            },
+            {
+                itShould: "not match on a duplicated regex request header key if any pattern tests false for the header",
+                xhrMockMethods: [
+                    { ifRequestHeader: [{a: /^kd/}]  },
+                    { ifRequestHeader: [{a: /lbj$/}]  },
+                    { ifRequestHeader: [{a: /\d/}]  },
+                    { setResponseBody: [{mock: ['body3.45']}] },
+                    { setRequestHeaders: ['a', 'kdlbj']  }
+                ],
+                sendOptions: {
+                },
+                expected: {
+                    responseBody: '{"mock":"json"}'
+                }
+            },
+            {
+                itShould: "not match if request header pattern succeeds but equality fails",
+                xhrMockMethods: [
+                    { ifRequestHeader: [{a: /^kd/}]  },
+                    { ifRequestHeader: [{a: 'kd32'}]  },
+                    { setResponseBody: [{mock: ['body3.65']}] },
+                    { setRequestHeaders: ['a', 'kd22']  }
+                ],
+                sendOptions: {
+                },
+                expected: {
+                    responseBody: '{"mock":"json"}'
                 }
             },
             {
@@ -90,47 +197,76 @@ describe('Mock', function () {
                 xhrMockMethods: [
                     { ifRequestHeader: [{a: '1, 1'}]  },
                     { setResponseStatus: [400]  },
-                    { setResponseBody: [{mock: ['body3']}]  }
+                    { setResponseBody: [{mock: ['body4']}]  },
+                    { setRequestHeader: ['a', 1]  },
+                    { setRequestHeader: ['a', 1]  }
                 ],
                 sendOptions: {
-                    setRequestHeaders: [
-                        ['a', 1],
-                        ['a', 1]
-                    ]
                 },
                 expected: {
-                    responseBody: '{"mock":["body3"]}',
+                    responseBody: '{"mock":["body4"]}',
                     responseStatus: 400
                 }
             },
             {
-                itShould: "set response headers based on mock input data",
+                itShould: "mock response based on location param equality",
                 xhrMockMethods: [
-                    { ifRequestHeader: [{a: '1, 1'}]  },
+                    { ifLocationParam: [{a: '1'}]  },
                     { setResponseHeader: [{c: 1}]  },
                     { setResponseHeader: [{c: 1, d: 1}]  },
                     { setResponseHeader: [{c: 1, d: 1, e: 5}]  },
-                    { setResponseBody: [{mock: ['body3']}]  }
+                    { setResponseBody: [{mock: ['body5']}]  }
                 ],
                 sendOptions: {
-                    setRequestHeaders: [
-                        ['a', 1],
-                        ['a', 1]
-                    ]
+                    beforeSend: function () {
+                        location.hash = 'a=1';
+                    }
                 },
                 expected: {
-                    responseBody: '{"mock":["body3"]}',
-                    responseHeader: {
-                        c: '1, 1, 1',
-                        d: '1, 1',
-                        e: '5'
-                    },
-                    allResponseHeaders : 'c:1, 1, 1\r\nd:1, 1\r\ne:5'
+                    responseBody: '{"mock":["body5"]}'
+                }
+            },
+            {
+                itShould: "mock response based on multiple location param equality",
+                xhrMockMethods: [
+                    { ifLocationParam: [{a: '1', b: 'b', c: 'd'}]  },
+                    { setResponseHeader: [{c: 1}]  },
+                    { setResponseHeader: [{c: 1, d: 1}]  },
+                    { setResponseHeader: [{c: 1, d: 1, e: 5}]  },
+                    { setResponseBody: [{mock: ['body6']}]  }
+                ],
+                sendOptions: {
+                    beforeSend: function () {
+                        location.hash = 'a=1&b=b&c=d';
+                    }
+                },
+                expected: {
+                    responseBody: '{"mock":["body6"]}'
+                }
+            },
+            {
+                itShould: "mock response based on most recent location param equality",
+                xhrMockMethods: [
+                    { ifLocationParam: [{a: '1', b: 'b'}]  },
+                    { ifLocationParam: [{a: '1', b: 'b', c: 'd'}]  },
+                    { setResponseHeader: [{c: 1}]  },
+                    { setResponseHeader: [{c: 1, d: 1}]  },
+                    { setResponseHeader: [{c: 1, d: 1, e: 5}]  },
+                    { setResponseBody: [{mock: ['body7']}]  }
+                ],
+                sendOptions: {
+                    beforeSend: function () {
+                        location.hash = 'a=1&b=b&c=d';
+                    }
+                },
+                expected: {
+                    responseBody: '{"mock":["body7"]}'
                 }
             }
 
         ], function () {
             beforeEach(function () {
+                location.hash = '';
                 XMLHttpRequest.dropAllMocks();
             });
 
@@ -143,43 +279,29 @@ describe('Mock', function () {
 
                 setXMLHttpRequestContext(ctx);
 
-                x.open('GET', 'base/spec/mock.json');
+                x.open(ctx.openMethod, ctx.openUrl);
+                setRequestHeaders(x, ctx);
+                setInstanceXHRSendOptions(ctx.sendOptions);
+                x.onload = onload;
 
-                x.onload = function () {
-                    var responseHeader, responseHeaderVal;
+                function onload() {
+                    if(typeof ctx.expected.allResponseHeaders !== 'undefined') {
+                        expect(this.getAllResponseHeaders()).toBe(ctx.expected.allResponseHeaders);
+                    }
 
-                    expect(this.responseText).toBe('{"mock":"json"}');
-                    expect(this.status).toBe(200);
+                    expect(this.responseText).toBe(ctx.expected.responseBody);
+
+                    if(typeof ctx.expected.responseStatus !== 'undefined') {
+                        expect(this.status).toBe(ctx.expected.responseStatus);
+                    }
 
                     for(responseHeader in ctx.expected.responseHeader) {
                         responseHeaderVal = ctx.expected.responseHeader[responseHeader];
-                        expect(this.getResponseHeader(responseHeader)).toBe(null);
+                        expect(this.getResponseHeader(responseHeader)).toBe(responseHeaderVal);
                     }
 
-                    this.open(ctx.openMethod, ctx.openUrl);
-                    setInstanceXHRSendOptions(this, ctx.sendOptions);
-                    this.onload = onload;
-                    this.send();
-
-                    function onload() {
-                        if(typeof ctx.expected.allResponseHeaders !== 'undefined') {
-                            expect(this.getAllResponseHeaders()).toBe(ctx.expected.allResponseHeaders);
-                        }
-
-                        expect(this.responseText).toBe(ctx.expected.responseBody);
-
-                        if(typeof ctx.expected.responseStatus !== 'undefined') {
-                            expect(this.status).toBe(ctx.expected.responseStatus);
-                        }
-
-                        for(responseHeader in ctx.expected.responseHeader) {
-                            responseHeaderVal = ctx.expected.responseHeader[responseHeader];
-                            expect(this.getResponseHeader(responseHeader)).toBe(responseHeaderVal);
-                        }
-
-                        done();
-                    }
-                };
+                    done();
+                }
 
                 x.send();
             });
@@ -514,4 +636,6 @@ describe('Mock', function () {
             }());
         });
     });
+
+
 });
