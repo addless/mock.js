@@ -2,9 +2,9 @@ module.exports = function(config) {
     config.set({
         browsers: [
             'Chrome',
-            'Firefox',
-            'Safari',
-            'Opera'
+            // 'Firefox',
+            // 'Safari',
+            // 'Opera'
         ],
         files: [
             'src/**.js',
