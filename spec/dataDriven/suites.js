@@ -1,3 +1,1 @@
-describe('Data Driven mock: ', function () {
-    data_driven('base/spec/dataDriven/mock.json', specBody);
-});
+data_driven('Data Driven mock: ', 'base/spec/dataDriven/mock.json', specBody);

@@ -1,4 +1,4 @@
-describe('Mock', function () {
+xdescribe('Mock', function () {
     'use strict';
     beforeEach(function () {
         XMLHttpRequest.dropAllMocks();
