@@ -7,11 +7,15 @@ module.exports = function(config) {
             // 'Opera'
         ],
         files: [
-            'src/**.js',
+            'src/*.js',
             'lib/data_driven.js',
-            'spec/**.js',
+            'lib/specBody.js',
+            'spec/dataDriven/*.js',
+            'spec/*.js',
 
-            {pattern: 'spec/**.json', included: false}
+            {pattern: 'spec/*.json', included: false},
+            {pattern: 'spec/dataDriven/*.json', included: false}
+
         ],
         frameworks: [
             'jasmine'
