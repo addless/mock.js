@@ -7,8 +7,9 @@ module.exports = function(config) {
             // 'Opera'
         ],
 
-        autoStart: false,
-        
+        browserDisconnectTimeout: 30000,
+        browserNoActivityTimeout: 30000,
+
         files: [
             'src/*.js',
             'lib/data_driven.js',
