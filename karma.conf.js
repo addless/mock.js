@@ -6,6 +6,9 @@ module.exports = function(config) {
             // 'Safari',
             // 'Opera'
         ],
+
+        autoStart: false,
+        
         files: [
             'src/*.js',
             'lib/data_driven.js',

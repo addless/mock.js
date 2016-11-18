@@ -32,7 +32,7 @@
       }
     ],
     "expected": {
-      "responseBody": "{'mock':['body']}"
+      "responseBody": "{\"mock\":[\"body\"]}"
     }
   },
   {
@@ -83,7 +83,7 @@
       }
     ],
     "expected": {
-      "responseBody": "{'mock':['body2']}"
+      "responseBody": "{\"mock\":[\"body2\"]}"
     }
   },
   {
@@ -136,7 +136,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':['body3']}"
+      "responseBody": "{\"mock\":[\"body3\"]}"
     }
   },
   {
@@ -176,7 +176,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':'json'}"
+      "responseBody": "{\"mock\":\"json\"}"
     }
   },
   {
@@ -215,7 +215,7 @@
       ]
     },
     "expected": {
-      "responseBody": "{'mock':'json'}"
+      "responseBody": "{\"mock\":\"json\"}"
     }
   },
   {
@@ -259,7 +259,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':'json'}"
+      "responseBody": "{\"mock\":\"json\"}"
     }
   },
   {
@@ -303,7 +303,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':'json'}"
+      "responseBody": "{\"mock\":\"json\"}"
     }
   },
   {
@@ -356,7 +356,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':['body3.45']}"
+      "responseBody": "{\"mock\":[\"body3.45\"]}"
     }
   },
   {
@@ -409,7 +409,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':'json'}"
+      "responseBody": "{\"mock\":\"json\"}"
     }
   },
   {
@@ -451,7 +451,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':'json'}"
+      "responseBody": "{\"mock\":\"json\"}"
     }
   },
   {
@@ -495,7 +495,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':['body4']}",
+      "responseBody": "{\"mock\":[\"body4\"]}",
       "responseStatus": 400
     }
   },
@@ -547,7 +547,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':['body5']}"
+      "responseBody": "{\"mock\":[\"body5\"]}"
     }
   },
   {
@@ -600,7 +600,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':['body6']}"
+      "responseBody": "{\"mock\":[\"body6\"]}"
     }
   },
   {
@@ -661,7 +661,7 @@
 
     },
     "expected": {
-      "responseBody": "{'mock':['body7']}"
+      "responseBody": "{\"mock\":[\"body7\"]}"
     }
   }
 ]
