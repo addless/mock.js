@@ -43,7 +43,7 @@
         "ifRequestHeader": [
           {
             "a": "1, 1",
-            "b": "multiple",
+            "b": "${/multiple/}",
             "c": "d"
           }
         ]
