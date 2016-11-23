@@ -16,7 +16,7 @@ module.exports = function(config) {
             'lib/dataParser.js',
             'lib/specBody.js',
             'spec/dataDriven/*.js',
-            'spec/*.js',
+            // 'spec/*.js',
 
             {pattern: 'spec/*.json', included: false},
             {pattern: 'spec/dataDriven/*.json', included: false}
