@@ -12,8 +12,9 @@ module.exports = function(config) {
 
         files: [
             'src/*.js',
-            'lib/dataDriven.js',
+            'lib/context.js',
             'lib/dataParser.js',
+            'lib/dataDriven.js',
             'lib/specBody.js',
             'spec/dataDriven/*.js',
             // 'spec/*.js',

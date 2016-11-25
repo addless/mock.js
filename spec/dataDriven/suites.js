@@ -32,6 +32,10 @@ describe('mock.js', function () {
             this.xhrChain = lastScope.xhrChain;
             var scope = setUpTestScope.apply(this);
 
+            if(typeof scope === 'undefined') {
+                scope = lastScope;
+            }
+
             if(typeof execute === 'function') {
                 execute(scope);
             }
@@ -74,10 +78,13 @@ describe('mock.js', function () {
                     switch(key){
                         case 'allResponseHeaders':
                             expect(this.getAllResponseHeaders()).toBe(expectedValue);
+                            break;
                         case 'responseBody':
                             expect(this.responseText).toBe(expectedValue);
+                            break;
                         case 'responseStatus':
                             expect(this.status).toBe(expectedValue);
+                            break;
                         case 'responseHeader':
                             var actual, expected;
                             for(var h in expectedValue){
@@ -85,6 +92,7 @@ describe('mock.js', function () {
                                 expected = expectedValue[h];
                                 expect(actual).toBe(expected);
                             }
+                            break;
                         default:
                             break;
                     }
