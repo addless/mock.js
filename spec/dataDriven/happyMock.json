@@ -1,0 +1,54 @@
+[
+
+  {
+    "itShould": "match request header set",
+    "xhrMockMethods": [
+      {
+        "ifRequestHeader": [
+          {
+            "a": "1, 1",
+            "b": "1",
+            "c": "d"
+          }
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body3"
+            ]
+          }
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "b",
+          "1"
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "c",
+          "d"
+        ]
+      }
+    ],
+    "expected": {
+      "responseBody": "{\"mock\":[\"body3\"]}"
+    }
+  }
+
+]

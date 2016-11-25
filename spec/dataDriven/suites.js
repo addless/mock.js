@@ -1,7 +1,7 @@
 describe('mock.js', function () {
 
     before(function () {
-        driver = dataDriven('base/spec/dataDriven/mock.json');
+        driver = dataDriven('base/spec/dataDriven/happyMock.json');
     });
 
     driver.it('data driven mock.js', function () {
@@ -21,20 +21,18 @@ describe('mock.js', function () {
 
         // provide custom helper function to provide context for test execution
         .setHelperFunc(function helperFunc (lastScope, execute) {
-
-            if(typeof this.x === 'undefined') {
-                //location.hash = ''; //TODO: Find out why this blocks webkit browsers from connecting with karma
+            if(typeof lastScope.x === 'undefined') {
+                location.hash = '';
                 XMLHttpRequest.dropAllMocks();
                 this.x = new XMLHttpRequest();
                 this.setRequestHeaderArgs = [];
+            } else {
+                this.x = lastScope.x;
+                this.xhrChain = lastScope.xhrChain;
+                this.setRequestHeaderArgs = lastScope.setRequestHeaderArgs;
             }
 
-            this.xhrChain = lastScope.xhrChain;
             var scope = setUpTestScope.apply(this);
-
-            if(typeof scope === 'undefined') {
-                scope = lastScope;
-            }
 
             if(typeof execute === 'function') {
                 execute(scope);
@@ -46,9 +44,13 @@ describe('mock.js', function () {
                 var mockFunction = this.fname;
                 var mockFunctionArgs = this.fargs;
 
-                if (typeof XMLHttpRequest[mockFunction] === 'undefined' || mockFunction === 'setRequestHeader') {
+                if (mockFunction === 'setRequestHeader') {
                     this.setRequestHeaderArgs.push(mockFunctionArgs);
-                    return;
+                    return this;
+                }
+
+                if (typeof XMLHttpRequest[mockFunction] === 'undefined' || mockFunction === 'setRequestHeader') {
+                    return this;
                 }
 
                 if (this.xhrChain) {
