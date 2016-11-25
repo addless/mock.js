@@ -1,3 +1,107 @@
-dataDriven([
-    ['Data Driven mock: ', 'base/spec/dataDriven/mock.json']
-], specBody);
+describe('mock.js', function () {
+
+    before(function () {
+        driver = dataDriven('base/spec/dataDriven/mock.json');
+    });
+
+    driver.it('data driven mock.js', function () {
+        var date = new Date();
+        var dateString = 'date-in-month-' + date.getMonth() + '-' + date.getDate() + '-' + date.getFullYear();
+
+        // provide driver metadata
+        driver.setContextMetadata({
+            setupItemsId: 'xhrMockMethods',
+            expectationsId: 'expected'
+        })
+
+        // provide driver assets
+        .setParserVariables({
+            dateHyphenFormat: dateString
+        })
+
+        // provide custom helper function to provide context for test execution
+        .setHelperFunc(function helperFunc (lastScope, execute) {
+
+            if(typeof this.x === 'undefined') {
+                //location.hash = ''; //TODO: Find out why this blocks webkit browsers from connecting with karma
+                XMLHttpRequest.dropAllMocks();
+                this.x = new XMLHttpRequest();
+                this.setRequestHeaderArgs = [];
+            }
+
+            this.xhrChain = lastScope.xhrChain;
+            var scope = setUpTestScope.apply(this);
+
+            if(typeof execute === 'function') {
+                execute(scope);
+            }
+
+            return scope;
+
+            function setUpTestScope() {
+                var mockFunction = this.fname;
+                var mockFunctionArgs = this.fargs;
+
+                if (typeof XMLHttpRequest[mockFunction] === 'undefined' || mockFunction === 'setRequestHeader') {
+                    this.setRequestHeaderArgs.push(mockFunctionArgs);
+                    return;
+                }
+
+                if (this.xhrChain) {
+                    this.xhrChain = this.xhrChain[mockFunction].apply(this.xhrChain, mockFunctionArgs);
+                } else {
+                    this.xhrChain = XMLHttpRequest[mockFunction].apply(XMLHttpRequest, mockFunctionArgs);
+                }
+
+                return this;
+            }
+        })
+
+        // execute tests
+        .executeTests(function executeFn (done) {
+            var x = this.x;
+            var expectations = this.expectations;
+            x.open('GET', 'base/spec/mock.json');
+            setRequestHeaders.apply(this);
+            x.onload = onload;
+            x.send();
+
+            function onload() {
+                var expectedValue;
+                for(var key in expectations) {
+                    expectedValue = expectations[key];
+
+                    switch(key){
+                        case 'allResponseHeaders':
+                            expect(this.getAllResponseHeaders()).toBe(expectedValue);
+                        case 'responseBody':
+                            expect(this.responseText).toBe(expectedValue);
+                        case 'responseStatus':
+                            expect(this.status).toBe(expectedValue);
+                        case 'responseHeader':
+                            var actual, expected;
+                            for(var h in expectedValue){
+                                actual = this.getResponseHeader(h);
+                                expected = expectedValue[h];
+                                expect(actual).toBe(expected);
+                            }
+                        default:
+                            break;
+                    }
+                }
+                done();
+            }
+
+            function setRequestHeaders() {
+                var x = this.x;
+                var setRequestHeaderArgs = this.setRequestHeaderArgs;
+                var fargs;
+
+                for(var i = 0; i < setRequestHeaderArgs.length; i++) {
+                    fargs = driver.parse(setRequestHeaderArgs[i]);
+                    x.setRequestHeader.apply(x, fargs);
+                }
+            }
+        });
+    });
+});
