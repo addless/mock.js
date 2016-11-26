@@ -35,9 +35,58 @@
       "responseBody": "{\"mock\":[\"body\"]}"
     }
   },
-
   {
     "itShould": "match request header set with multiple keys and regex",
+    "xhrMockMethods": [
+      {
+        "ifRequestHeader": [
+          {
+            "a": "1, 1",
+            "b": "${^12$}",
+            "c": "d"
+          }
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body3"
+            ]
+          }
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "b",
+          "12"
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "c",
+          "d"
+        ]
+      }
+    ],
+    "expected": {
+      "responseBody": "{\"mock\":[\"body3\"]}"
+    }
+  },
+  {
+    "itShould": "match request header set with multiple keys",
     "xhrMockMethods": [
       {
         "ifRequestHeader": [

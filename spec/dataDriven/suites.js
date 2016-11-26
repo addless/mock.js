@@ -1,7 +1,7 @@
 describe('mock.js', function () {
 
     before(function () {
-        driver = dataDriven('base/spec/dataDriven/mock.json');
+        driver = dataDriven('base/spec/dataDriven/mockSaveBeforeRegex.json');
     });
 
     driver.it('data driven mock.js', function () {
