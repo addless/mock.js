@@ -283,5 +283,56 @@
       "responseBody": "{\"mock\":[\"body4\"]}",
       "responseStatus": 400
     }
+  },
+  {
+    "itShould": "should mock response based on location params",
+    "xhrMockMethods": [
+      {
+        "ifLocationParam": [
+          {
+            "a": "1",
+            "b": "1"
+          }
+        ]
+      },
+      {
+        "ifLocationParam": [
+          {
+            "c": "${^1$}"
+          }
+        ]
+      },
+      {
+        "setResponseStatus": [
+          1
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body"
+            ]
+          }
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "c",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "d",
+          1
+        ]
+      }
+    ],
+    "locationHash":"a=1&b=1&c=1",
+    "expected": {
+      "responseBody": "{\"mock\":[\"body\"]}",
+      "responseStatus": 1
+    }
   }
 ]

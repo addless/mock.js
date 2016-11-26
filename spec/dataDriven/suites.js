@@ -8,7 +8,8 @@ describe('mock.js', function () {
         // provide driver metadata
         driver.setContextMetadata({
             setupItemsId: 'xhrMockMethods',
-            expectationsId: 'expected'
+            expectationsId: 'expected',
+            otherData: ['locationHash']
         })
 
         // provide custom helper function to provide context for test execution
@@ -27,6 +28,10 @@ describe('mock.js', function () {
             var scope = setUpTestScope.apply(this);
 
             if(typeof execute === 'function') {
+                this.x.open('GET', 'base/spec/mock.json');
+                if(this.locationHash) {
+                    location.hash = this.locationHash;
+                }
                 execute(scope);
             }
 
@@ -59,7 +64,7 @@ describe('mock.js', function () {
         .executeTests(function executeFn (done) {
             var x = this.x;
             var expectations = this.expectations;
-            x.open('GET', 'base/spec/mock.json');
+
             setRequestHeaders.apply(this);
             x.onload = onload;
             x.send();
