@@ -1,22 +1,14 @@
 describe('mock.js', function () {
 
     before(function () {
-        driver = dataDriven('base/spec/dataDriven/mockSaveBeforeRegex.json');
+        driver = dataDriven('base/spec/dataDriven/mock.json');
     });
 
     driver.it('data driven mock.js', function () {
-        var date = new Date();
-        var dateString = 'date-in-month-' + date.getMonth() + '-' + date.getDate() + '-' + date.getFullYear();
-
         // provide driver metadata
         driver.setContextMetadata({
             setupItemsId: 'xhrMockMethods',
             expectationsId: 'expected'
-        })
-
-        // provide driver assets
-        .setParserVariables({
-            dateHyphenFormat: dateString
         })
 
         // provide custom helper function to provide context for test execution

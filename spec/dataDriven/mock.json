@@ -1,5 +1,40 @@
 [
-
+  {
+    "itShould": "match request header on equality",
+    "xhrMockMethods": [
+      {
+        "ifRequestHeader": [
+          {
+            "a": "1, 1"
+          }
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body"
+            ]
+          }
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      }
+    ],
+    "expected": {
+      "responseBody": "{\"mock\":[\"body\"]}"
+    }
+  },
   {
     "itShould": "match request header set with multiple keys and regex",
     "xhrMockMethods": [
@@ -49,6 +84,204 @@
     "expected": {
       "responseBody": "{\"mock\":[\"body3\"]}"
     }
-  }
+  },
+  {
+    "itShould": "match request header set with multiple keys",
+    "xhrMockMethods": [
+      {
+        "ifRequestHeader": [
+          {
+            "a": "1, 1",
+            "b": "${multiple}",
+            "c": "d"
+          }
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body3"
+            ]
+          }
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "b",
+          "multiple"
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "c",
+          "d"
+        ]
+      }
+    ],
+    "expected": {
+      "responseBody": "{\"mock\":[\"body3\"]}"
+    }
+  },
+  {
+    "itShould": "not match on a duplicated equality request header key for the first duplicate equality",
+    "xhrMockMethods": [
+      {
+        "ifRequestHeader": [
+          {
+            "a": "1"
+          }
+        ]
+      },
+      {
+        "ifRequestHeader": [
+          {
+            "a": "2"
+          }
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body3.5"
+            ]
+          }
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          "1"
+        ]
+      }
+    ],
+    "expected": {
+      "responseBody": "{\"mock\":\"json\"}"
+    }
+  },
+  {
+    "itShould": "not match on a duplicated equality request header key for the most recent duplicate equality",
+    "xhrMockMethods": [
+      {
+        "ifRequestHeader": [
+          {
+            "a": "1"
+          }
+        ]
+      },
+      {
+        "ifRequestHeader": [
+          {
+            "a": "2"
+          }
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body3.25"
+            ]
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "responseBody": "{\"mock\":\"json\"}"
+    }
+  },
+  {
+    "itShould": "not match if request header pattern succeeds but equality fails",
+    "xhrMockMethods": [
+      {
+        "ifRequestHeader": [
+          {
+            "a": {
 
+            }
+          }
+        ]
+      },
+      {
+        "ifRequestHeader": [
+          {
+            "a": "kd32"
+          }
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body3.65"
+            ]
+          }
+        ]
+      },
+      {
+        "setRequestHeaders": [
+          "a",
+          "kd22"
+        ]
+      }
+    ],
+    "expected": {
+      "responseBody": "{\"mock\":\"json\"}"
+    }
+  },
+  {
+    "itShould": "match the response status",
+    "xhrMockMethods": [
+      {
+        "ifRequestHeader": [
+          {
+            "a": "1, 1"
+          }
+        ]
+      },
+      {
+        "setResponseStatus": [
+          400
+        ]
+      },
+      {
+        "setResponseBody": [
+          {
+            "mock": [
+              "body4"
+            ]
+          }
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      },
+      {
+        "setRequestHeader": [
+          "a",
+          1
+        ]
+      }
+    ],
+    "expected": {
+      "responseBody": "{\"mock\":[\"body4\"]}",
+      "responseStatus": 400
+    }
+  }
 ]
