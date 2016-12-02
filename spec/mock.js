@@ -1,95 +1,328 @@
 describe('Mock', function () {
+    'use strict';
 
-    it('should mock responses based on header equality', function (done) {
-        var x = new XMLHttpRequest();
-
-        XMLHttpRequest
-            .ifRequestHeader({'x': 'y'})
-            .setResponseStatus(111);
-
-        x.open('GET', '…');
-        x.setRequestHeader('x', 'y');
-        x.onload = onload;
-        x.send();
-
-        function onload() {
-            expect(x.responseStatus).toBe(111);
-            done();
-        }
+    beforeEach(function () {
+        XMLHttpRequest.dropAllMocks();
     });
 
-    it('should mock responses based on header pattern', function (done) {
+    it('should mock response based on request header', function (done) {
         var x = new XMLHttpRequest();
 
         XMLHttpRequest
-            .ifRequestHeader({'x': /^y$/})
-            .setResponseStatus(111);
+            .ifRequestHeader({a: '1, 1'})
+            .ifRequestHeader({b: /^1$/})
+            .setResponseStatus(1)
+            .setResponseHeader({c: 1})
+            .setResponseHeader({c: 1, d: 1})
+            .setResponseBody({mocked: 'body'});
 
-        x.open('GET', '…');
-        x.setRequestHeader('x', 'y');
-        x.onload = onload;
-        x.send();
+        (function () {
+            x.open('GET', 'base/spec/actual.json');
+            x.setRequestHeader('a', 1);
+            x.onload = onload;
+            x.send();
 
-        function onload() {
-            expect(x.responseStatus).toBe(111);
-            done();
-        }
+            function onload() {
+                expect(this.responseText).toBe('{"actual":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.open('GET', 'base/spec/actual.json');
+                this.setRequestHeader('a', 1);
+                this.setRequestHeader('a', 1);
+                this.setRequestHeader('b', 1);
+                this.onload = onload;
+                this.send();
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mocked":"body"}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
     });
 
-    it('should mock responses based on url equality', function (done) {
+    it('should mock response based on request URL pattern', function (done) {
         var x = new XMLHttpRequest();
-        var u = 'http://foo.bar';
 
         XMLHttpRequest
-            .ifRequestURL(u)
-            .setResponseStatus(111);
+            .ifRequestURL(/1$/)
+            .setResponseStatus(1)
+            .setResponseHeader({c: 1})
+            .setResponseHeader({c: 1, d: 1})
+            .setResponseBody({mocked: 'body'});
 
-        x.open('GET', u);
-        x.setRequestHeader('x', 'y');
-        x.onload = onload;
-        x.send();
+        (function () {
+            x.open('GET', 'base/spec/actual.json');
+            x.onload = onload;
+            x.send();
 
-        function onload() {
-            expect(x.responseStatus).toBe(111);
-            done();
-        }
+            function onload() {
+                expect(this.responseText).toBe('{"actual":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.open('GET', 'base/spec/actual.json?1');
+                this.onload = onload;
+                this.send();
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mocked":"body"}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
     });
 
-    it('should mock responses based on url pattern', function (done) {
+    it('should mock response based on request URL equality', function (done) {
         var x = new XMLHttpRequest();
-        var u = 'http://foo.bar';
 
         XMLHttpRequest
-            .ifRequestURL(/^http:/)
-            .setResponseStatus(111);
+            .ifRequestURL('1')
+            .setResponseStatus(1)
+            .setResponseHeader({c: 1})
+            .setResponseHeader({c: 1, d: 1})
+            .setResponseBody({mocked: 'body'});
 
-        x.open('GET', u);
-        x.setRequestHeader('x', 'y');
-        x.onload = onload;
-        x.send();
+        (function () {
+            x.open('GET', 'base/spec/actual.json');
+            x.onload = onload;
+            x.send();
 
-        function onload() {
-            expect(x.responseStatus).toBe(111);
-            done();
-        }
+            function onload() {
+                expect(this.responseText).toBe('{"actual":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.open('GET', '1');
+                this.onload = onload;
+                this.send();
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mocked":"body"}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
     });
 
-    it('should mock body', function (done) {
+    it('should mock response based on request method pattern', function (done) {
         var x = new XMLHttpRequest();
-        var b = {foo: 1};
 
         XMLHttpRequest
-            .ifRequestURL('foo')
-            .setResponseBody(b);
+            .ifRequestMethod(/^1$/)
+            .setResponseStatus(1)
+            .setResponseHeader({c: 1})
+            .setResponseHeader({c: 1, d: 1})
+            .setResponseBody({mocked: 'body'});
 
-        x.open('GET', 'foo');
-        x.setRequestHeader('x', 'y');
-        x.onload = onload;
-        x.send();
+        (function () {
+            x.open('GET', 'base/spec/actual.json');
+            x.onload = onload;
+            x.send();
 
-        function onload() {
-            expect(JSON.stringify(x.responseText)).toBe(b);
-            done();
-        }
+            function onload() {
+                expect(this.responseText).toBe('{"actual":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.open('1', 'base/spec/actual.json');
+                this.onload = onload;
+                this.send();
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mocked":"body"}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
+    });
+
+    it('should mock response based on request method equality', function (done) {
+        var x = new XMLHttpRequest();
+
+        XMLHttpRequest
+            .ifRequestMethod('1')
+            .setResponseStatus(1)
+            .setResponseHeader({c: 1})
+            .setResponseHeader({c: 1, d: 1})
+            .setResponseBody({mocked: 'body'});
+
+        (function () {
+            x.open('GET', 'base/spec/actual.json');
+            x.onload = onload;
+            x.send();
+
+            function onload() {
+                expect(this.responseText).toBe('{"actual":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.open('1', 'base/spec/actual.json');
+                this.onload = onload;
+                this.send();
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mocked":"body"}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
+    });
+
+    it('should mock response based on request body JSON', function (done) {
+        var x = new XMLHttpRequest();
+
+        XMLHttpRequest
+            .ifRequestBody({a: 1, b: /^1$/})
+            .ifRequestBody({c: [1, /^1$/]})
+            .setResponseStatus(1)
+            .setResponseHeader({c: 1})
+            .setResponseHeader({c: 1, d: 1})
+            .setResponseBody({mocked: 'body'});
+
+        (function () {
+            x.open('GET', 'base/spec/actual.json');
+            x.onload = onload;
+            x.send();
+
+            function onload() {
+                expect(this.responseText).toBe('{"actual":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.onload = onload;
+                this.open('GET', 'base/spec/actual.json');
+                this.send(JSON.stringify({a: 1, b: 1, c: [1, 1]}));
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mocked":"body"}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
+    });
+
+    it('should mock response based on request body string', function (done) {
+        var x = new XMLHttpRequest();
+
+        XMLHttpRequest
+            .ifRequestBody('1')
+            .setResponseStatus(1)
+            .setResponseHeader({c: 1})
+            .setResponseHeader({c: 1, d: 1})
+            .setResponseBody({mocked: 'body'});
+
+        (function () {
+            x.onload = onload;
+            x.open('GET', 'base/spec/actual.json');
+            x.send();
+
+            function onload() {
+                expect(this.responseText).toBe('{"actual":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.open('GET', 'base/spec/actual.json');
+                this.onload = onload;
+                this.send(1);
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mocked":"body"}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
+    });
+
+    it('should mock response based on location params', function (done) {
+        var x = new XMLHttpRequest();
+
+        XMLHttpRequest
+            .ifLocationParam({a: '1', b: '1'})
+            .ifLocationParam({c: /^1$/})
+            .setResponseStatus(1)
+            .setResponseHeader({c: 1})
+            .setResponseHeader({c: 1, d: 1})
+            .setResponseBody('{"mocked":"body"}');
+
+        (function () {
+            x.open('GET', 'base/spec/actual.json');
+            location.hash = 'a=1&b=1';
+            x.onload = onload;
+            x.send();
+
+            function onload() {
+                expect(this.responseText).toBe('{"actual":"json"}');
+                expect(this.getResponseHeader('c')).toBe(null);
+                expect(this.getResponseHeader('d')).toBe(null);
+                expect(this.getResponseHeader('e')).toBe(null);
+                expect(this.status).toBe(200);
+
+                this.open('GET', 'base/spec/actual.json');
+                location.hash = 'a=1&b=1&c=1';
+                this.onload = onload;
+                this.send();
+
+                function onload() {
+                    expect(this.getAllResponseHeaders()).toBe('c:1, 1\r\nd:1');
+                    expect(this.responseText).toBe('{"mocked":"body"}');
+                    expect(this.getResponseHeader('c')).toBe('1, 1');
+                    expect(this.getResponseHeader('d')).toBe('1');
+                    expect(this.getResponseHeader('e')).toBe(null);
+                    expect(this.status).toBe(1);
+                    done();
+                }
+            }
+        }());
     });
 });

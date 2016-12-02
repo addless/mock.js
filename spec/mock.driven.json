@@ -1,0 +1,249 @@
+{
+    "should ignore request based on headers": {
+        "setup mock": [
+            "dropAllMocks", [],
+            "ifRequestHeader", [{"a": "1, 1"}],
+            "ifRequestHeader", [{"b": " /^1$/ "}],
+            "setResponseStatus", [1],
+            "setResponseHeader", [{"c": 1}],
+            "setResponseHeader", [{"c": 1, "d": 1}],
+            "setResponseBody", [{"mocked": "body"}]
+        ],
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "setRequestHeader", ["a", 1],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"actual\":\"json\"}",
+            "status", 200
+        ],
+        "check response headers": [
+            "getResponseHeader", ["c"], null,
+            "getResponseHeader", ["d"], null,
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should mock request based on headers": {
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "setRequestHeader", ["a", 1],
+            "setRequestHeader", ["a", 1],
+            "setRequestHeader", ["b", 1],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"mocked\":\"body\"}",
+            "status", 1
+        ],
+        "check response headers": [
+            "getAllResponseHeaders", [], "c:1, 1\r\nd:1",
+            "getResponseHeader", ["c"], "1, 1",
+            "getResponseHeader", ["d"], "1",
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should ignore request based on URL pattern": {
+        "setup mock": [
+            "dropAllMocks", [],
+            "ifRequestURL", [" /1$/ "],
+            "setResponseStatus", [1],
+            "setResponseHeader", [{"c": 1}],
+            "setResponseHeader", [{"c": 1, "d": 1}],
+            "setResponseBody", [{"mocked": "body"}]
+        ],
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"actual\":\"json\"}",
+            "status", 200
+        ],
+        "check response headers": [
+            "getResponseHeader", ["c"], null,
+            "getResponseHeader", ["d"], null,
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should mock request based on URL pattern": {
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json?1"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"mocked\":\"body\"}",
+            "status", 1
+        ],
+        "check response headers": [
+            "getAllResponseHeaders", [], "c:1, 1\r\nd:1",
+            "getResponseHeader", ["c"], "1, 1",
+            "getResponseHeader", ["d"], "1",
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should ignore request based on URL equality": {
+        "setup mock": [
+            "dropAllMocks", [],
+            "ifRequestURL", ["1"],
+            "setResponseStatus", [1],
+            "setResponseHeader", [{"c": 1}],
+            "setResponseHeader", [{"c": 1, "d": 1}],
+            "setResponseBody", [{"mocked": "body"}]
+        ],
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"actual\":\"json\"}",
+            "status", 200
+        ],
+        "check response headers": [
+            "getResponseHeader", ["c"], null,
+            "getResponseHeader", ["d"], null,
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should mock request based on URL equality": {
+        "invoke request": [
+            "open", ["GET", "1"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"mocked\":\"body\"}",
+            "status", 1
+        ],
+        "check response headers": [
+            "getAllResponseHeaders", [], "c:1, 1\r\nd:1",
+            "getResponseHeader", ["c"], "1, 1",
+            "getResponseHeader", ["d"], "1",
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should ignore request based on method": {
+        "setup mock": [
+            "dropAllMocks", [],
+            "ifRequestMethod", ["1"],
+            "setResponseStatus", [1],
+            "setResponseHeader", [{"c": 1}],
+            "setResponseHeader", [{"c": 1, "d": 1}],
+            "setResponseBody", [{"mocked": "body"}]
+        ],
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"actual\":\"json\"}",
+            "status", 200
+        ],
+        "check response headers": [
+            "getResponseHeader", ["c"], null,
+            "getResponseHeader", ["d"], null,
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should mock request based on method": {
+        "invoke request": [
+            "open", ["1", "base/spec/actual.json"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"mocked\":\"body\"}",
+            "status", 1
+        ],
+        "check response headers": [
+            "getAllResponseHeaders", [], "c:1, 1\r\nd:1",
+            "getResponseHeader", ["c"], "1, 1",
+            "getResponseHeader", ["d"], "1",
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should ignore request based on body": {
+        "setup mock": [
+            "dropAllMocks", [],
+            "ifRequestBody", [{"a": 1, "b": " /^1$/ "}],
+            "ifRequestBody", [{"c": [1, " /^1$/ "]}],
+            "setResponseStatus", [1],
+            "setResponseHeader", [{"c": 1}],
+            "setResponseHeader", [{"c": 1, "d": 1}],
+            "setResponseBody", [{"mocked": "body"}]
+        ],
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"actual\":\"json\"}",
+            "status", 200
+        ],
+        "check response headers": [
+            "getResponseHeader", ["c"], null,
+            "getResponseHeader", ["d"], null,
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should mock request based on body": {
+        "invoke request": [
+            "open", ["1", "base/spec/actual.json"],
+            "send", ["{\"a\": 1, \"b\": 1, \"c\": [1, 1]}"]
+        ],
+        "check response properties": [
+            "responseText", "{\"mocked\":\"body\"}",
+            "status", 1
+        ],
+        "check response headers": [
+            "getAllResponseHeaders", [], "c:1, 1\r\nd:1",
+            "getResponseHeader", ["c"], "1, 1",
+            "getResponseHeader", ["d"], "1",
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should ignore request based on location params": {
+        "setup location params": [
+            "a=1&b=1"
+        ],
+        "setup mock": [
+            "dropAllMocks", [],
+            "ifLocationParam", [{"a": "1", "b": "1"}],
+            "ifLocationParam", [{"c": " /^1$/ "}],
+            "setResponseStatus", [1],
+            "setResponseHeader", [{"c": 1}],
+            "setResponseHeader", [{"c": 1, "d": 1}],
+            "setResponseBody", [{"mocked": "body"}]
+        ],
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"actual\":\"json\"}",
+            "status", 200
+        ],
+        "check response headers": [
+            "getResponseHeader", ["c"], null,
+            "getResponseHeader", ["d"], null,
+            "getResponseHeader", ["e"], null
+        ]
+    },
+    "should mock request based on location params": {
+        "setup location params": [
+            "a=1&b=1&c=1"
+        ],
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"mocked\":\"body\"}",
+            "status", 1
+        ],
+        "check response headers": [
+            "getAllResponseHeaders", [], "c:1, 1\r\nd:1",
+            "getResponseHeader", ["c"], "1, 1",
+            "getResponseHeader", ["d"], "1",
+            "getResponseHeader", ["e"], null
+        ]
+    }
+}

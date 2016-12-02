@@ -7,8 +7,10 @@ module.exports = function(config) {
             'Opera'
         ],
         files: [
-            'src/*.js',
-            'spec/*.js'
+            {pattern: 'node_modules/driven-js/src/**.js', included: true},
+            {pattern: 'src/**.js', included: true},
+            {pattern: 'spec/**.js', included: true},
+            {pattern: 'spec/**.json', included: false}
         ],
         frameworks: [
             'jasmine'
