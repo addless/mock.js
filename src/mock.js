@@ -104,16 +104,20 @@
         }
     }
 
-    function setResponseBody(body) {
+    function setResponseBody(url) {
         var test = instructions[this._id];
 
-        if (typeof body !== 'string') body = JSON.stringify(body);
         instructions[this._id] = setBody;
         return this;
 
         function setBody(xhr) {
+            var x;
+
             if (test(xhr) !== true) return;
-            xhr._responseText = body;
+            x = new XMLHttpRequest();
+            x._open('GET', url, false);
+            x._send(null);
+            xhr._responseText = x.responseText;
             return true;
         }
     }
