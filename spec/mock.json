@@ -7,7 +7,7 @@
             "setResponseStatus", [1],
             "setResponseHeader", [{"c": 1}],
             "setResponseHeader", [{"c": 1, "d": 1}],
-            "setResponseBody", [{"mocked": "body"}]
+            "setResponseBody", ["base/spec/mocked.json"]
         ],
         "invoke request": [
             "open", ["GET", "base/spec/actual.json"],
@@ -33,7 +33,7 @@
             "send", []
         ],
         "check response properties": [
-            "responseText", "{\"mocked\":\"body\"}",
+            "responseText", "{\"mocked\":\"json\"}",
             "status", 1
         ],
         "check response headers": [
@@ -50,7 +50,7 @@
             "setResponseStatus", [1],
             "setResponseHeader", [{"c": 1}],
             "setResponseHeader", [{"c": 1, "d": 1}],
-            "setResponseBody", [{"mocked": "body"}]
+            "setResponseBody", ["base/spec/mocked.json"]
         ],
         "invoke request": [
             "open", ["GET", "base/spec/actual.json"],
@@ -72,7 +72,7 @@
             "send", []
         ],
         "check response properties": [
-            "responseText", "{\"mocked\":\"body\"}",
+            "responseText", "{\"mocked\":\"json\"}",
             "status", 1
         ],
         "check response headers": [
@@ -89,7 +89,7 @@
             "setResponseStatus", [1],
             "setResponseHeader", [{"c": 1}],
             "setResponseHeader", [{"c": 1, "d": 1}],
-            "setResponseBody", [{"mocked": "body"}]
+            "setResponseBody", ["base/spec/mocked.json"]
         ],
         "invoke request": [
             "open", ["GET", "base/spec/actual.json"],
@@ -111,7 +111,7 @@
             "send", []
         ],
         "check response properties": [
-            "responseText", "{\"mocked\":\"body\"}",
+            "responseText", "{\"mocked\":\"json\"}",
             "status", 1
         ],
         "check response headers": [
@@ -128,7 +128,7 @@
             "setResponseStatus", [1],
             "setResponseHeader", [{"c": 1}],
             "setResponseHeader", [{"c": 1, "d": 1}],
-            "setResponseBody", [{"mocked": "body"}]
+            "setResponseBody", ["base/spec/mocked.json"]
         ],
         "invoke request": [
             "open", ["GET", "base/spec/actual.json"],
@@ -150,7 +150,7 @@
             "send", []
         ],
         "check response properties": [
-            "responseText", "{\"mocked\":\"body\"}",
+            "responseText", "{\"mocked\":\"json\"}",
             "status", 1
         ],
         "check response headers": [
@@ -168,7 +168,7 @@
             "setResponseStatus", [1],
             "setResponseHeader", [{"c": 1}],
             "setResponseHeader", [{"c": 1, "d": 1}],
-            "setResponseBody", [{"mocked": "body"}]
+            "setResponseBody", ["base/spec/mocked.json"]
         ],
         "invoke request": [
             "open", ["GET", "base/spec/actual.json"],
@@ -190,7 +190,7 @@
             "send", ["{\"a\": 1, \"b\": 1, \"c\": [1, 1]}"]
         ],
         "check response properties": [
-            "responseText", "{\"mocked\":\"body\"}",
+            "responseText", "{\"mocked\":\"json\"}",
             "status", 1
         ],
         "check response headers": [
@@ -211,7 +211,7 @@
             "setResponseStatus", [1],
             "setResponseHeader", [{"c": 1}],
             "setResponseHeader", [{"c": 1, "d": 1}],
-            "setResponseBody", [{"mocked": "body"}]
+            "setResponseBody", ["base/spec/mocked.json"]
         ],
         "invoke request": [
             "open", ["GET", "base/spec/actual.json"],
@@ -236,7 +236,7 @@
             "send", []
         ],
         "check response properties": [
-            "responseText", "{\"mocked\":\"body\"}",
+            "responseText", "{\"mocked\":\"json\"}",
             "status", 1
         ],
         "check response headers": [
