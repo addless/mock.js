@@ -35,6 +35,7 @@
 
     function dropAllMocks() {
         instructions = {__proto__: null};
+        return this;
     }
     
     function open(method, url, async) {
