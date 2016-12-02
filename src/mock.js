@@ -37,7 +37,7 @@
         instructions = {__proto__: null};
         return this;
     }
-    
+
     function open(method, url, async) {
         this._open.apply(this, arguments);
         this._reqHead = {__proto__: null};
