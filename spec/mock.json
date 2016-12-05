@@ -85,7 +85,7 @@
     "should ignore request based on URL equality": {
         "setup mock": [
             "dropAllMocks", [],
-            "ifRequestURL", ["1"],
+            "ifRequestURL", ["http://localhost:9876/1"],
             "setResponseStatus", [1],
             "setResponseHeader", [{"c": 1}],
             "setResponseHeader", [{"c": 1, "d": 1}],
