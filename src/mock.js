@@ -45,6 +45,7 @@
         this._params = {__proto__: null};
         this._url = normalize(url);
         this._method = method;
+        this._status = null;
         this._body = null;
 
         function normalize(url) {
@@ -98,7 +99,7 @@
     }
 
     function setResponseStatus(code) {
-        var test = instructions[this._id];
+        var test = instructions[this._id] || Function('return true');
 
         instructions[this._id] = setStatus;
         return this;
@@ -111,7 +112,7 @@
     }
 
     function setResponseBody(url) {
-        var test = instructions[this._id];
+        var test = instructions[this._id] || Function('return true');
 
         instructions[this._id] = setBody;
         return this;
@@ -130,7 +131,7 @@
 
     function setResponseHeader(headers) {
         var k = Object.keys(headers);
-        var test = instructions[this._id];
+        var test = instructions[this._id] || Function('return true');
 
         instructions[this._id] = setHeaders;
         return this;
