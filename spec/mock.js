@@ -1,9 +1,18 @@
 describe('Mock.js', function () {
     'use strict';
 
+    var mock;
+    var prev;
+    var xhr;
+
     forEachTest('base/spec/mock.json', function (done) {
-        var xhr = new XMLHttpRequest();
-        var mock = XMLHttpRequest;
+        prev = xhr;
+        mock = XMLHttpRequest;
+        xhr = new XMLHttpRequest();
+
+        runStep('reuse prev xhr', function () {
+            xhr = prev;
+        });
 
         runStep('setup location params', function (hash) {
             location.hash = hash;

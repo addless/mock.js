@@ -82,6 +82,17 @@
             "getResponseHeader", ["e"], null
         ]
     },
+    "should reset mocked status": {
+        "reuse prev xhr": [],
+        "invoke request": [
+            "open", ["GET", "base/spec/actual.json"],
+            "send", []
+        ],
+        "check response properties": [
+            "responseText", "{\"mocked\":\"json\"}",
+            "status", 200
+        ]
+    },
     "should ignore request based on URL equality": {
         "setup mock": [
             "dropAllMocks", [],
@@ -107,7 +118,7 @@
     },
     "should mock request based on URL equality": {
         "invoke request": [
-            "open", ["GET", "1"],
+            "open", ["GET", "/1"],
             "send", []
         ],
         "check response properties": [
