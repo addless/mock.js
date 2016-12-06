@@ -43,9 +43,15 @@
         this._reqHead = {__proto__: null};
         this._resHead = {__proto__: null};
         this._params = {__proto__: null};
+        this._url = normalize(url);
         this._method = method;
         this._body = null;
-        this._url = url;
+
+        function normalize(url) {
+            var a = document.createElement('a');
+            a.setAttribute('href', url);
+            return a.href;
+        }
     }
 
     function send(body) {
