@@ -5,7 +5,7 @@ describe('Mock.js', function () {
     var prev;
     var xhr;
 
-    forEachTest('base/spec/mock.json', function (done) {
+    forEachTest('base/spec/mock.json', function () {
         prev = xhr;
         mock = XMLHttpRequest;
         xhr = new XMLHttpRequest();
@@ -18,24 +18,25 @@ describe('Mock.js', function () {
             location.hash = hash;
         });
 
+        runStep('setup request', function (key, args) {
+            xhr[key].apply(xhr, args);
+        });
+
         runStep('setup mock', function (key, args) {
             mock = mock[key].apply(mock, args);
         });
 
-        runStep('invoke request', function (key, args) {
-            xhr[key].apply(xhr, args);
+        runAsyncStep('send request', function (args) {
+            xhr.onloadend = endAsyncStep;
+            xhr.send.apply(xhr, args);
         });
 
-        xhr.onloadend = function () {
-            runStep('check response properties', function (key, val) {
-                expect(xhr[key]).toEqual(val);
-            });
+        runStep('check response properties', function (key, val) {
+            expect(xhr[key]).toEqual(val);
+        });
 
-            runStep('check response headers', function (key, args, val) {
-                expect(xhr[key].apply(xhr, args)).toEqual(val);
-            });
-
-            done();
-        };
+        runStep('check response headers', function (key, args, val) {
+            expect(xhr[key].apply(xhr, args)).toEqual(val);
+        });
     });
 });
