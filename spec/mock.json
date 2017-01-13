@@ -9,10 +9,12 @@
             "setResponseHeader", [{"c": 1, "d": 1}],
             "setResponseBody", ["base/spec/mocked.json"]
         ],
-        "invoke request": [
+        "setup request": [
             "open", ["GET", "base/spec/actual.json"],
-            "setRequestHeader", ["a", 1],
-            "send", []
+            "setRequestHeader", ["a", 1]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"actual\":\"json\"}",
@@ -25,12 +27,14 @@
         ]
     },
     "should mock request based on headers": {
-        "invoke request": [
+        "setup request": [
             "open", ["GET", "base/spec/actual.json"],
             "setRequestHeader", ["a", 1],
             "setRequestHeader", ["a", 1],
-            "setRequestHeader", ["b", 1],
-            "send", []
+            "setRequestHeader", ["b", 1]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"mocked\":\"json\"}",
@@ -52,9 +56,11 @@
             "setResponseHeader", [{"c": 1, "d": 1}],
             "setResponseBody", ["base/spec/mocked.json"]
         ],
-        "invoke request": [
-            "open", ["GET", "base/spec/actual.json"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "base/spec/actual.json"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"actual\":\"json\"}",
@@ -67,9 +73,11 @@
         ]
     },
     "should mock request based on URL pattern": {
-        "invoke request": [
-            "open", ["GET", "base/spec/actual.json?1"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "base/spec/actual.json?1"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"mocked\":\"json\"}",
@@ -84,9 +92,11 @@
     },
     "should reset mocked status": {
         "reuse prev xhr": [],
-        "invoke request": [
-            "open", ["GET", "base/spec/actual.json"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "base/spec/actual.json"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"mocked\":\"json\"}",
@@ -102,9 +112,11 @@
             "setResponseHeader", [{"c": 1, "d": 1}],
             "setResponseBody", ["base/spec/mocked.json"]
         ],
-        "invoke request": [
-            "open", ["GET", "base/spec/actual.json"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "base/spec/actual.json"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"actual\":\"json\"}",
@@ -117,9 +129,11 @@
         ]
     },
     "should mock request based on URL equality": {
-        "invoke request": [
-            "open", ["GET", "/1"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "/1"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"mocked\":\"json\"}",
@@ -141,9 +155,11 @@
             "setResponseHeader", [{"c": 1, "d": 1}],
             "setResponseBody", ["base/spec/mocked.json"]
         ],
-        "invoke request": [
-            "open", ["GET", "base/spec/actual.json"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "base/spec/actual.json"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"actual\":\"json\"}",
@@ -156,9 +172,11 @@
         ]
     },
     "should mock request based on method": {
-        "invoke request": [
-            "open", ["1", "base/spec/actual.json"],
-            "send", []
+        "setup request": [
+            "open", ["1", "base/spec/actual.json"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"mocked\":\"json\"}",
@@ -181,9 +199,11 @@
             "setResponseHeader", [{"c": 1, "d": 1}],
             "setResponseBody", ["base/spec/mocked.json"]
         ],
-        "invoke request": [
-            "open", ["GET", "base/spec/actual.json"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "base/spec/actual.json"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"actual\":\"json\"}",
@@ -196,9 +216,11 @@
         ]
     },
     "should mock request based on body": {
-        "invoke request": [
-            "open", ["1", "base/spec/actual.json"],
-            "send", ["{\"a\": 1, \"b\": 1, \"c\": [1, 1]}"]
+        "setup request": [
+            "open", ["1", "base/spec/actual.json"]
+        ],
+        "send request": [
+           ["{\"a\": 1, \"b\": 1, \"c\": [1, 1]}"]
         ],
         "check response properties": [
             "responseText", "{\"mocked\":\"json\"}",
@@ -224,9 +246,11 @@
             "setResponseHeader", [{"c": 1, "d": 1}],
             "setResponseBody", ["base/spec/mocked.json"]
         ],
-        "invoke request": [
-            "open", ["GET", "base/spec/actual.json"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "base/spec/actual.json"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"actual\":\"json\"}",
@@ -242,9 +266,11 @@
         "setup location params": [
             "a=1&b=1&c=1"
         ],
-        "invoke request": [
-            "open", ["GET", "base/spec/actual.json"],
-            "send", []
+        "setup request": [
+            "open", ["GET", "base/spec/actual.json"]
+        ],
+        "send request": [
+            []
         ],
         "check response properties": [
             "responseText", "{\"mocked\":\"json\"}",
