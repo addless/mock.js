@@ -99,7 +99,7 @@
             []
         ],
         "check response properties": [
-            "responseText", "{\"mocked\":\"json\"}",
+            "responseText", "{\"actual\":\"json\"}",
             "status", 200
         ]
     },
@@ -233,54 +233,39 @@
             "getResponseHeader", ["e"], null
         ]
     },
-    "should ignore request based on location params": {
-        "setup location params": [
-            "a=1&b=1"
-        ],
+    "should apply request delay appropriately": {
         "setup mock": [
             "dropAllMocks", [],
-            "ifLocationParam", [{"a": "1", "b": "1"}],
-            "ifLocationParam", [{"c": " /^1$/ "}],
-            "setResponseStatus", [1],
-            "setResponseHeader", [{"c": 1}],
-            "setResponseHeader", [{"c": 1, "d": 1}],
-            "setResponseBody", ["base/spec/mocked.json"]
+            "ifRequestBody", ["1"],
+            "setResponseDelay", [1500]
+        ],
+        "register event listener via 'addEventListener'": [
+            "readystatechange",
+            "loadstart",
+            "loadend",
+            "load"
+        ],
+        "register event listener via 'on' handler": [
+            "onreadystatechange",
+            "onloadstart",
+            "onloadend",
+            "onload"
         ],
         "setup request": [
             "open", ["GET", "base/spec/actual.json"]
         ],
         "send request": [
-            []
+            ["1"]
         ],
-        "check response properties": [
-            "responseText", "{\"actual\":\"json\"}",
-            "status", 200
-        ],
-        "check response headers": [
-            "getResponseHeader", ["c"], null,
-            "getResponseHeader", ["d"], null,
-            "getResponseHeader", ["e"], null
-        ]
-    },
-    "should mock request based on location params": {
-        "setup location params": [
-            "a=1&b=1&c=1"
-        ],
-        "setup request": [
-            "open", ["GET", "base/spec/actual.json"]
-        ],
-        "send request": [
-            []
-        ],
-        "check response properties": [
-            "responseText", "{\"mocked\":\"json\"}",
-            "status", 1
-        ],
-        "check response headers": [
-            "getAllResponseHeaders", [], "c:1, 1\r\nd:1",
-            "getResponseHeader", ["c"], "1, 1",
-            "getResponseHeader", ["d"], "1",
-            "getResponseHeader", ["e"], null
+        "check response time": [
+            "onreadystatechange", 1500, 2000,
+            "readystatechange", 1500, 2000,
+            "onloadstart", 0, 1500,
+            "loadstart", 0, 1500,
+            "onloadend", 1500, 2000,
+            "loadend", 1500, 2000,
+            "onload", 1500, 2000,
+            "load", 1500, 2000
         ]
     }
 }

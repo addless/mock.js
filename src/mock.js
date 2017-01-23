@@ -8,29 +8,36 @@
         _getAllResHeaders: {value: XMLHttpRequest.prototype.getAllResponseHeaders},
         _getResHeader:     {value: XMLHttpRequest.prototype.getResponseHeader},
         _setReqHeader:     {value: XMLHttpRequest.prototype.setRequestHeader},
+        _addEventListener: {value: XMLHttpRequest.prototype.addEventListener},
         _open:             {value: XMLHttpRequest.prototype.open},
         _send:             {value: XMLHttpRequest.prototype.send},
         _mockURL:          {value: location.href},
 
-        responseText:          defineProxy(XMLHttpRequest.prototype, 'responseText'),
-        status:                defineProxy(XMLHttpRequest.prototype, 'status'),
+        onprogress:            proxyHandler(XMLHttpRequestEventTarget.prototype, 'onprogress'),
+        onloadend:             proxyHandler(XMLHttpRequestEventTarget.prototype, 'onloadend'),
+        onload:                proxyHandler(XMLHttpRequestEventTarget.prototype, 'onload'),
+        onreadystatechange:    proxyHandler(XMLHttpRequest.prototype, 'onreadystatechange'),
+        responseText:          proxyProperty(XMLHttpRequest.prototype, 'responseText'),
+        status:                proxyProperty(XMLHttpRequest.prototype, 'status'),
         getAllResponseHeaders: {value: getAllResponseHeaders},
         getResponseHeader:     {value: getResponseHeader},
         setRequestHeader:      {value: setRequestHeader},
+        addEventListener:      {value: addEventListener},
         open:                  {value: open},
         send:                  {value: send}
     });
 
     Object.defineProperties(XMLHttpRequest, {
-        ifRequestHeader:     {value: addMockCriteria('_reqHead')},
-        ifLocationParam:     {value: addMockCriteria('_params')},
-        ifRequestMethod:     {value: addMockCriteria('_method')},
-        ifRequestBody:       {value: addMockCriteria('_body')},
-        ifRequestURL:        {value: addMockCriteria('_url')},
-        setResponseStatus:   {value: setResponseStatus},
-        setResponseHeader:   {value: setResponseHeader},
-        setResponseBody:     {value: setResponseBody},
-        dropAllMocks:        {value: dropAllMocks}
+        ifRequestHeader:   {value: addMockCriteria('_reqHead')},
+        ifLocationParam:   {value: addMockCriteria('_params')},
+        ifRequestMethod:   {value: addMockCriteria('_method')},
+        ifRequestBody:     {value: addMockCriteria('_body')},
+        ifRequestURL:      {value: addMockCriteria('_url')},
+        setResponseStatus: {value: setResponseStatus},
+        setResponseHeader: {value: setResponseHeader},
+        setResponseDelay:  {value: setResponseDelay},
+        setResponseBody:   {value: setResponseBody},
+        dropAllMocks:      {value: dropAllMocks}
     });
 
     function dropAllMocks() {
@@ -44,6 +51,7 @@
         this._resHead = {__proto__: null};
         this._params = {__proto__: null};
         this._url = normalize(url);
+        this._responseText = null;
         this._method = method;
         this._status = null;
         this._body = null;
@@ -98,6 +106,47 @@
         if (k.length > 0) return r.join('\r\n');
     }
 
+    function addEventListener(type, func, useCapture) {
+        return this._addEventListener(type, delayedHandler(this, func), useCapture);
+    }
+
+    function proxyHandler(proto, type) {
+        var old = Object.getOwnPropertyDescriptor(proto, type);
+        var val;
+
+        return {
+            get: function getter() { return val },
+            set: setter
+        };
+
+        function setter(func) {
+            old.set.call(this, func);
+            val = old.get.call(this);
+            if (typeof val !== 'function') return;
+            old.set.call(this, delayedHandler(this, val));
+        }
+    }
+
+    function delayedHandler(xhr, func) {
+        var timeout;
+
+        return function () {
+            if (xhr.readyState < 4) return func.apply(xhr, arguments);
+            if (xhr._delay == null) return func.apply(xhr, arguments);
+            timeout = setTimeout(executeFunc, xhr._delay, arguments);
+            xhr.addEventListener('abort', cancelFunc);
+        };
+
+        function executeFunc() {
+            xhr.removeEventListener('abort', cancelFunc);
+            func.apply(xhr, arguments);
+        }
+
+        function cancelFunc() {
+            clearTimeout(timeout);
+        }
+    }
+
     function setResponseStatus(code) {
         var test = instructions[this._id] || Function('return true');
 
@@ -144,7 +193,19 @@
         }
     }
 
-    function defineProxy(proto, key) {
+    function setResponseDelay(delay) {
+        var test = instructions[this._id] || Function('return true');
+        instructions[this._id] = setDelay;
+        return this;
+
+        function setDelay(xhr) {
+            if (test(xhr) !== true) return;
+            xhr._delay = delay;
+            return true;
+        }
+    }
+
+    function proxyProperty(proto, key) {
         var d = Object.getOwnPropertyDescriptor(proto, key);
         var k = '_' + key;
 
@@ -184,28 +245,25 @@
         }
 
         function isMatch(value, pattern) {
-            var k;
-            var i = -1;
+            var k, i;
 
             switch (true) {
             case value === pattern:
-                break;
+                return true;
 
+            default:
             case value == null:
             case pattern == null:
                 return false;
 
-            default:
-                if (value !== pattern) return false;
-                break;
-
             case pattern instanceof RegExp:
-                if (!pattern.test(value)) return false;
-                break;
+                return pattern.test(value);
 
             case typeof value === 'object':
-                k = Object.keys(pattern);
-                while (k[++i]) if (!isMatch(value[k[i]], pattern[k[i]])) return false;
+            }
+
+            for (i = 0, k = Object.keys(pattern); k[i]; i++) {
+                if (!isMatch(value[k[i]], pattern[k[i]])) return false;
             }
 
             return true;
